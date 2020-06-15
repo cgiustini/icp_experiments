@@ -16,11 +16,9 @@ def find_closest_idxs(p1, p2):
 
 	for i, a in enumerate(p1):
 
-		# print(i)
-
 		idx = np.arange(len(p2))
 		mask = np.ones(len(p2), np.bool)
-		mask[p2_idxs] = 0
+		# mask[p2_idxs] = 0
 
 		idx = idx[mask]
 		error = np.abs(a - p2[mask])
