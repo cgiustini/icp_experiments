@@ -30,6 +30,19 @@ def find_closest_idxs(p1, p2):
 
 	return p2_idxs
 	
+def icp(s, d):
+
+	e = np.copy(s)
+
+	for i in range(100):
+		closest_idxs = find_closest_idxs(e, d)
+		d_ = d[:, closest_idxs]
+
+		R, t, U, S, VT = ls_fit(e, d_)
+		e = np.matmul(R, e) + get_translation_matrix(e, t)
+		# print(t)
+
+	return R, t, U, S, VT, e
 
 def ls_fit(s, d):
 
@@ -53,6 +66,56 @@ def ls_fit(s, d):
 	t = dc[:, 0] - np.matmul(R, sc[:, 0])
 
 	return R, t, U, S, VT
+
+
+def create_pcloud_xline(start, stop, n):
+	pcloud = np.zeros((3, n), dtype=float)
+	pcloud[0, :] = np.linspace(start, stop, n)
+	return pcloud
+
+def get_translation_matrix(pcloud, t):	
+	return np.tile(np.array([t]).T, (1, pcloud.shape[1]))
+
+
+def filter_pcloud(points, x_min=None, x_max=None, y_min=None, y_max=None, z_min=None, z_max=None):
+
+	if x_min is not None:
+		x_min_idx = points[0, :] > x_min
+	else:
+		x_min_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	if y_min is not None:
+		y_min_idx = points[1, :] > y_min
+	else:
+		y_min_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	if z_min is not None:
+		z_min_idx = points[2, :] > z_min
+	else:
+		z_min_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	if x_max is not None:
+		x_max_idx = points[0, :] < x_max
+	else:
+		x_max_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	if y_max is not None:
+		y_max_idx = points[1, :] < y_max
+	else:
+		y_max_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	if z_max is not None:
+		z_max_idx = points[2, :] < z_max
+	else:
+		z_max_idx = np.full((points.shape[1]), fill_value=True, dtype=bool)
+
+	filter_idx = reduce(
+		np.logical_and,
+		[x_min_idx, y_min_idx, z_min_idx, x_max_idx, y_max_idx, z_max_idx]
+	)
+
+	return points[:, filter_idx]
+
 
 if __name__ == '__main__':
 	
