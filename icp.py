@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import transforms3d
+from functools import reduce
 import IPython
 
 def plot_points(ps, marker='b+', label=''):
@@ -18,7 +19,6 @@ def find_closest_idxs(p1, p2):
 
 		idx = np.arange(len(p2))
 		mask = np.ones(len(p2), np.bool)
-		# mask[p2_idxs] = 0
 
 		idx = idx[mask]
 		error = np.abs(a - p2[mask])
@@ -33,16 +33,43 @@ def find_closest_idxs(p1, p2):
 def icp(s, d):
 
 	e = np.copy(s)
+	R_final = np.eye(3, dtype=float)
+	t_final = np.array([0, 0, 0])
 
-	for i in range(100):
+	for i in range(10):
 		closest_idxs = find_closest_idxs(e, d)
 		d_ = d[:, closest_idxs]
+		print(i)
 
 		R, t, U, S, VT = ls_fit(e, d_)
 		e = np.matmul(R, e) + get_translation_matrix(e, t)
-		# print(t)
 
-	return R, t, U, S, VT, e
+		t_final = np.matmul(R, t_final) + t
+		R_final = np.matmul(R, R_final)
+
+	return R_final, t_final, e
+
+def icp_randsampl(s, d):
+
+	e = np.copy(s)
+	R_final = np.eye(3, dtype=float)
+	t_final = np.array([0, 0, 0])
+
+	for i in range(50):
+
+		rand_idxs = np.random.randint(0, e.shape[1], 3000)
+		e_ = e[:, rand_idxs]
+		closest_idxs = find_closest_idxs(e_, d)
+		d_ = d[:, closest_idxs]
+
+		R, t, U, S, VT = ls_fit(e_, d_)
+		e = np.matmul(R, e) + get_translation_matrix(e, t)
+
+		t_final = np.matmul(R, t_final) + t
+		R_final = np.matmul(R, R_final)
+
+	return R_final, t_final, e
+
 
 def ls_fit(s, d):
 

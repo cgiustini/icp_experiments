@@ -1,7 +1,7 @@
 import numpy as np
 import IPython
 import matplotlib.pyplot as plt
-from icp import (ls_fit, find_closest_idxs, icp,
+from icp import (ls_fit, find_closest_idxs, icp, icp_randsampl,
 				    create_pcloud_xline, get_translation_matrix, filter_pcloud)
 from functools import reduce
 import transforms3d
@@ -43,10 +43,13 @@ if __name__ == '__main__':
 
 	R = transforms3d.euler.euler2mat(0, 0, np.pi/2, 'sxyz')
 	s = np.concatenate((s, np.matmul(R, s)), axis=1)
-	d = s + get_translation_matrix(s, [20, 0, 0])
+	d = np.matmul(transforms3d.euler.euler2mat(0, 0, 0, 'sxyz'), s) +\
+		get_translation_matrix(s, [20, 0, 0])
 
-	R, t, U, S, VT, e = icp(s, d)
+	R, t, e = icp_randsampl(s, d)
 
+	e_ = np.matmul(R, s) + get_translation_matrix(s, t)
+	np.allclose(e, e_, atol=1e-6)
 
 	plt.plot(s[0, :], s[1, :], 'b+', label='source')
 	plt.plot(d[0, :], d[1, :], 'g+', label='destination')
