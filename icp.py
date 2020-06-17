@@ -30,16 +30,15 @@ def find_closest_idxs(p1, p2):
 
 	return p2_idxs
 	
-def icp(s, d):
+def icp(s, d, n=1):
 
 	e = np.copy(s)
 	R_final = np.eye(3, dtype=float)
 	t_final = np.array([0, 0, 0])
 
-	for i in range(10):
+	for i in range(n):
 		closest_idxs = find_closest_idxs(e, d)
 		d_ = d[:, closest_idxs]
-		print(i)
 
 		R, t, U, S, VT = ls_fit(e, d_)
 		e = np.matmul(R, e) + get_translation_matrix(e, t)
@@ -49,15 +48,15 @@ def icp(s, d):
 
 	return R_final, t_final, e
 
-def icp_randsampl(s, d):
+def icp_randsampl(s, d, n=100):
 
 	e = np.copy(s)
 	R_final = np.eye(3, dtype=float)
 	t_final = np.array([0, 0, 0])
 
-	for i in range(50):
+	for i in range(n):
 
-		rand_idxs = np.random.randint(0, e.shape[1], 3000)
+		rand_idxs = np.random.randint(0, e.shape[1], 100)
 		e_ = e[:, rand_idxs]
 		closest_idxs = find_closest_idxs(e_, d)
 		d_ = d[:, closest_idxs]
