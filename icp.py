@@ -175,6 +175,25 @@ def get_normals(pcloud, sample_size=6, max_range=2):
 
 	return normals
 
+def filter_normals(pcloud, normals, sample_size=10, max_range=2):
+
+	filtered_normals = np.copy(normals)
+
+	for i, p_ in enumerate(pcloud.T):
+		vector_to_p_ = pcloud - get_translation_matrix(pcloud, p_)
+		dist_to_p_ = np.abs(np.linalg.norm(vector_to_p_, 2, axis=0))
+		sample_idxs = np.logical_and(0 < dist_to_p_, dist_to_p_ < max_range)
+
+		p_samples  = pcloud[:, sample_idxs]
+
+		if p_samples.shape[1] > (sample_size-1):
+			p_samples = p_samples[:, 0:(sample_size-1)]
+		n = p_samples.shape[1]
+
+		normals_to_average = np.concatenate((n*np.array([p_]).T, -p_samples), axis=1)
+		filtered_normals[:, i] = np.mean(normals_to_average, axis=1)
+
+	return filtered_normals
 
 if __name__ == '__main__':
 	

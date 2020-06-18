@@ -2,7 +2,8 @@ import numpy as np
 import IPython
 import matplotlib.pyplot as plt
 from icp import (ls_fit, find_closest_idxs, icp, icp_randsampl,
-				    create_pcloud_xline, get_translation_matrix, filter_pcloud)
+				 create_pcloud_xline, get_translation_matrix,
+				 filter_pcloud, get_normals, filter_normals)
 import transforms3d
 
 
@@ -83,7 +84,6 @@ if __name__ == '__main__':
 		Rs = []
 
 		for n in np.arange(icp_iter):
-			print(n)
 			R, t, e = icp_func(s_, d_)
 			ts.append(t)
 			Rs.append(R)
@@ -114,9 +114,7 @@ if __name__ == '__main__':
 		e = np.matmul(best_R, s) + get_translation_matrix(s, best_t)
 		plt.plot(d[0, :], d[1, :], 'g+', label='stop pcloud')
 		plt.plot(e[0, :], e[1, :], 'r+', label='transformed start pcloud')
-		plt.title('%s: Stop and Transformed Point Cloud (Top View)' % alg_name)
+		plt.title('%s\n Stop and Transformed Point Cloud (Top View)' % alg_name)
 		plt.xlabel('x (m)')
 		plt.ylabel('y (m)')
-
-
-	IPython.embed()
+		plt.legend()
