@@ -143,6 +143,39 @@ def filter_pcloud(points, x_min=None, x_max=None, y_min=None, y_max=None, z_min=
 	return points[:, filter_idx]
 
 
+def plane_fit(p):
+	c = np.mean(p, axis=1)
+	N = p.shape[1]
+
+	c_array = np.tile(np.array([c]).T, (1, N))
+	A = p - c_array
+
+	U, S, VT = np.linalg.svd(A, full_matrices=True)
+	n = U[:, -1]
+
+	return n, c
+
+def get_normals(pcloud, sample_size=6, max_range=2):
+
+	normals = np.full_like(pcloud, 0, dtype=float)
+
+	for i, p_ in enumerate(pcloud.T):
+		vector_to_p_ = pcloud - get_translation_matrix(pcloud, p_)
+		dist_to_p_ = np.abs(np.linalg.norm(vector_to_p_, 2, axis=0))
+		sample_idxs = np.logical_and(0 < dist_to_p_, dist_to_p_ < max_range)
+
+		p_samples  = pcloud[:, sample_idxs]
+
+		if p_samples.shape[1] > (sample_size-1):
+			p_samples = p_samples[:, 0:(sample_size-1)]
+		p_samples = np.concatenate((np.array([p_]).T, p_samples), axis=1)
+
+		n, c = plane_fit(p_samples)
+		normals[:, i] = n
+
+	return normals
+
+
 if __name__ == '__main__':
 	
 	# pure translation example
@@ -153,14 +186,14 @@ if __name__ == '__main__':
 	# d = s + 5
 
 	# 45 degree rotation, no translation example
-	s = np.zeros((2, 3), dtype=float)
-	s[:, 0] = [-1, 0]
-	s[:, 1] = [0, 0]
-	s[:, 2] = [1, 0]
-	d = np.zeros((2, 3), dtype=float)
-	d[:, 0] = [-1.0/np.sqrt(2), -1.0/np.sqrt(2)]
-	d[:, 1] = [0, 0]
-	d[:, 2] = [1.0/np.sqrt(2), 1.0/np.sqrt(2)]
+	# s = np.zeros((2, 3), dtype=float)
+	# s[:, 0] = [-1, 0]
+	# s[:, 1] = [0, 0]
+	# s[:, 2] = [1, 0]
+	# d = np.zeros((2, 3), dtype=float)
+	# d[:, 0] = [-1.0/np.sqrt(2), -1.0/np.sqrt(2)]
+	# d[:, 1] = [0, 0]
+	# d[:, 2] = [1.0/np.sqrt(2), 1.0/np.sqrt(2)]
 
 	# 45 degree rotation with translation example
 	# s = np.zeros((2, 3), dtype=float)
@@ -172,20 +205,43 @@ if __name__ == '__main__':
 	# d[:, 1] = [2, 2]
 	# d[:, 2] = [2 + 1.0/np.sqrt(2), 2 + 1.0/np.sqrt(2)]
 
-	R, t, U, S, VT = ls_fit(s, d)
-	n = s.shape[1]
-	de = np.matmul(R, s) + np.tile(np.array([t]).T, (1, n))
+	# R, t, U, S, VT = ls_fit(s, d)
+	# n = s.shape[1]
+	# de = np.matmul(R, s) + np.tile(np.array([t]).T, (1, n))
 
-	plot_points(s, 'bo', 'orig')
-	plot_points(d, 'go', 'dest')
-	plot_points(de, 'r+', 'ls fit')
-	plt.legend()
-	plt.xlabel('x')
-	plt.ylabel('y')
-	plt.title('2D Least Squares Fit Example')
+	# plot_points(s, 'bo', 'orig')
+	# plot_points(d, 'go', 'dest')
+	# plot_points(de, 'r+', 'ls fit')
+	# plt.legend()
+	# plt.xlabel('x')
+	# plt.ylabel('y')
+	# plt.title('2D Least Squares Fit Example')
 
-	idxs = find_closest_idxs(s, d)
+	# idxs = find_closest_idxs(s, d)
+
+
+	# Basic example for plane fit.
+	# p = np.zeros((3, 3), dtype=float)
+	# p[:, 0] = [0, 0, 0]
+	# p[:, 1] = [0, 1, 1]
+	# p[:, 2] = [1, 1, 1]
+	# n, c = plane_fit(p)
+
+	# Basic example for normal calculations
+	pclouds = []
+	for i in range(10):
+		new_line = create_pcloud_xline(0, 10, 10)
+		new_line = new_line + get_translation_matrix(new_line, [0, float(i), 0])
+		pclouds.append(new_line)
+	pcloud = np.concatenate(pclouds, axis=1)
+	# R = transforms3d.euler.euler2mat(0, 0, 0, 'sxyz')
+	# pcloud = np.matmul(R, pcloud)
+	max_range = 2
+	sample_size = 6
+	normals = get_normals(pcloud, sample_size, max_range)
+
 
 	IPython.embed()
+
 
 
