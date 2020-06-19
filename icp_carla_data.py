@@ -43,14 +43,14 @@ def load_radar_pcloud(npz_file):
 if __name__ == '__main__':
 
 	# Select scenario
-	npz_dict = {'pure_translation': ('Pure Translation', 'radar_start.npz', 'radar_stop.npz')}
+	npz_dict = {'pure_translation': ('Pure Translation', 'data/radar_start.npz', 'data/radar_stop.npz')}
 	scenario = 'pure_translation'
 	scenario_cfg = npz_dict[scenario]
 
 	# Selet and configure the algorithms
 	algorithms = {
 		'icp': (icp, 1, {''}, 'ICP with all points'),
-		'icp_randsampl': (icp_randsampl, 10, {''}, 'ICP with random subsampling')
+		# 'icp_randsampl': (icp_randsampl, 10, {''}, 'ICP with random subsampling')
 	}
 
 	# Select and load npz files
@@ -84,6 +84,7 @@ if __name__ == '__main__':
 		Rs = []
 
 		for n in np.arange(icp_iter):
+			print(n)
 			R, t, e = icp_func(s_, d_)
 			ts.append(t)
 			Rs.append(R)
@@ -118,3 +119,5 @@ if __name__ == '__main__':
 		plt.xlabel('x (m)')
 		plt.ylabel('y (m)')
 		plt.legend()
+
+	IPython.embed()

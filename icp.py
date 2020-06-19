@@ -30,13 +30,14 @@ def find_closest_idxs(p1, p2):
 
 	return p2_idxs
 	
-def icp(s, d, n=1):
+def icp(s, d, n=50):
 
 	e = np.copy(s)
 	R_final = np.eye(3, dtype=float)
 	t_final = np.array([0, 0, 0])
 
 	for i in range(n):
+		print(i)
 		closest_idxs = find_closest_idxs(e, d)
 		d_ = d[:, closest_idxs]
 
@@ -48,7 +49,7 @@ def icp(s, d, n=1):
 
 	return R_final, t_final, e
 
-def icp_randsampl(s, d, n=100):
+def icp_randsampl(s, d, n=50):
 
 	e = np.copy(s)
 	R_final = np.eye(3, dtype=float)

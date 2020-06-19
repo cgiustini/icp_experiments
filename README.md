@@ -2,6 +2,7 @@
 Iterative-Closest-Point algorithm tests.
 
 All the core functions are located in icp.py.
+Run carla_pointcloud.py to setup the CARLA simulator, create a vehicle with a radar sensor and capture a point cloud (beware: needs better documentation).
 
 ## Performance of two ICP variants.
 Below is the ouptut of icp_carla_data, which runs 2 different ICP algorithms on two point clouds collected at two points (the start and stop point) separated by exactly 10 meters (with no rotation).
